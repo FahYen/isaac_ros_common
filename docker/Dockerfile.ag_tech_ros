@@ -1,0 +1,32 @@
+ARG BASE_IMAGE=ubuntu:22.04
+# Look for build time variable, if not default to ubuntu 22.04
+FROM ${BASE_IMAGE}
+
+### Install isaac_ros_visual_slam dependencies ###
+ARG ISAAC_ROS_WS=/workspaces/isaac_ros-dev
+# Working directory of RUN, Copy 
+WORKDIR ${ISAAC_ROS_WS}
+
+# Add package.xml files to image, so changing source code won't trigger rebuild of this layer, unless dependencies changed
+COPY src/isaac_ros_visual_slam/isaac_ros_visual_slam/package.xml \
+     src/isaac_ros_visual_slam/isaac_ros_visual_slam/
+
+COPY src/isaac_ros_apriltag/isaac_ros_apriltag/package.xml \
+     src/isaac_ros_apriltag/isaac_ros_apriltag/
+
+# Remapping of isaac Ros packages names to Ros 2 packages
+COPY src/isaac_ros_common/docker/rosdep/extra_rosdeps.yaml /etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml
+
+RUN echo "yaml file:///etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml" \
+                > /etc/ros/rosdep/sources.list.d/00-nvidia-isaac.list
+
+RUN apt-get update && \
+    rosdep update && \
+    rosdep install \
+        --from-paths src/isaac_ros_visual_slam/isaac_ros_visual_slam \
+                     src/isaac_ros_apriltag/isaac_ros_apriltag \
+        --ignore-src -y && \
+    rm -rf /var/lib/apt/lists/*
+
+# Increase Cyclone socket size for big ROS2 message exchanges
+ENV CYCLONEDDS_URI="file:///workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/cyclone_config.xml"
