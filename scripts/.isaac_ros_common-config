@@ -1,0 +1,2 @@
+CONFIG_IMAGE_KEY=ros2_humble.realsense.ag_tech
+CONFIG_CONTAINER_NAME_SUFFIX=ag_tech
