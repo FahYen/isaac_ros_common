@@ -251,14 +251,14 @@ if [[ ! -z "${ROS_WS}" ]]; then
     $ROOT/build_image_layers.sh --image_key "deploy_ws" --image_name "${INSTALLED_DEPLOY_IMAGE_NAME}" --base_image "${PREVIOUS_STAGE}" --context_dir "${TEMP_DIR}" --build_arg "MODE=deploy ROS_WS=${ROS_WS_DEST}" ${ADDITIONAL_DOCKER_ARGS[@]}
 fi
 
-# Optional, build suffix image if specified
-if [[ ! -z "${SUFFIX_IMAGE_KEY}" ]]; then
-    print_info "#Building suffix deploy image for key ${SUFFIX_IMAGE_KEY}"
-    PREVIOUS_STAGE="${INSTALLED_DEPLOY_IMAGE_NAME}"
-    INSTALLED_DEPLOY_IMAGE_NAME="${DEPLOY_IMAGE_NAME}-suffix"
-    $ROOT/build_image_layers.sh --image_key "${SUFFIX_IMAGE_KEY}" --image_name "${INSTALLED_DEPLOY_IMAGE_NAME}" --base_image "${PREVIOUS_STAGE}" --build_arg "MODE=deploy" ${ADDITIONAL_DOCKER_ARGS[@]}
-fi
+# # Optional, build suffix image if specified
+# if [[ ! -z "${SUFFIX_IMAGE_KEY}" ]]; then
+#     print_info "#Building suffix deploy image for key ${SUFFIX_IMAGE_KEY}"
+#     PREVIOUS_STAGE="${INSTALLED_DEPLOY_IMAGE_NAME}"
+#     INSTALLED_DEPLOY_IMAGE_NAME="${DEPLOY_IMAGE_NAME}-suffix"
+#     $ROOT/build_image_layers.sh --image_key "${SUFFIX_IMAGE_KEY}" --image_name "${INSTALLED_DEPLOY_IMAGE_NAME}" --base_image "${PREVIOUS_STAGE}" --build_arg "MODE=deploy" ${ADDITIONAL_DOCKER_ARGS[@]}
+# fi
 
-# Retag last image
-docker tag "${INSTALLED_DEPLOY_IMAGE_NAME}" "${DEPLOY_IMAGE_NAME}"
-print_info "DONE, image: ${DEPLOY_IMAGE_NAME}"
+# # Retag last image
+# docker tag "${INSTALLED_DEPLOY_IMAGE_NAME}" "${DEPLOY_IMAGE_NAME}"
+# print_info "DONE, image: ${DEPLOY_IMAGE_NAME}"
