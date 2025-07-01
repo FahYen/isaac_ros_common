@@ -31,12 +31,16 @@ COPY udev_rules/99-realsense-libusb-custom.rules /etc/udev/rules.d/99-realsense-
 RUN --mount=type=cache,target=/var/cache/apt \
     mkdir -p ${ROS_ROOT}/src && cd ${ROS_ROOT}/src \
     && git clone ${REALSENSE_ROS_GIT_URL} -b ${REALSENSE_ROS_VERSION} \
-    && cd realsense-ros && source ${ROS_ROOT}/setup.bash \
-    && cd realsense2_camera_msgs && bloom-generate rosdebian && fakeroot debian/rules binary \
-    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb \
-    && cd realsense2_description && bloom-generate rosdebian && fakeroot debian/rules binary \
-    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb \
-    && cd realsense2_camera && bloom-generate rosdebian \
+    && cd realsense-ros && source ${ROS_ROOT}/setup.bash
+
+
+RUN cd ${ROS_ROOT}/src/realsense-ros/realsense2_camera_msgs && bloom-generate rosdebian && fakeroot debian/rules binary \
+    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb
+
+RUN cd ${ROS_ROOT}/src/realsense-ros/realsense2_description && bloom-generate rosdebian && fakeroot debian/rules binary \
+    && cd ../ && apt-get install -y ./*.deb && rm ./*.deb
+    
+RUN cd ${ROS_ROOT}/src/realsense-ros/realsense2_camera && bloom-generate rosdebian \
     && sed -i 's/dh_shlibdeps -/dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info -/g' debian/rules \
     && sed -i 's/ros-humble-librealsense2, //g' debian/control \
     && fakeroot debian/rules binary \
