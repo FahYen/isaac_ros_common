@@ -8,22 +8,40 @@ COPY src/isaac_ros_common/docker/rosdep/extra_rosdeps.yaml /etc/ros/rosdep/sourc
 RUN echo "yaml file:///etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml" \
                 > /etc/ros/rosdep/sources.list.d/00-nvidia-isaac.list
 
-# Add package.xml files to image, so changing source code won't trigger rebuild of this layer, unless dependencies changed
-COPY src/isaac_ros_visual_slam/isaac_ros_visual_slam/package.xml \
-     src/isaac_ros_visual_slam/isaac_ros_visual_slam/
-
-COPY src/isaac_ros_apriltag/isaac_ros_apriltag/package.xml \
-     src/isaac_ros_apriltag/isaac_ros_apriltag/
-
 # Install dependencies
 RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
     apt-get update && \
     rosdep update && \
     rosdep install \
-        --from-paths src/isaac_ros_visual_slam/isaac_ros_visual_slam \
-                     src/isaac_ros_apriltag/isaac_ros_apriltag \
-        --ignore-src -y && \
-    rm -rf /var/lib/apt/lists/*
+        --from-paths /workspaces/isaac_ros-dev/src/isaac_ros_visual_slam/isaac_ros_visual_slam \
+                     /workspaces/isaac_ros-dev/src/isaac_ros_apriltag/isaac_ros_apriltag \
+                     /workspaces/isaac_ros-dev/src/zed-ros2-wrapper \
+        --ignore-src -y
+
 
 # Increase Cyclone socket size for big ROS2 message exchanges
 ENV CYCLONEDDS_URI="file:///workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/cyclone_config.xml"
+
+
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
+    apt-get update && \
+    rosdep update && \
+    rosdep install \
+        --from-paths /workspaces/isaac_ros-dev/src/isaac_ros_zed \
+                     /workspaces/isaac_ros-dev/src/isaac_ros_examples \
+        --ignore-src -y
+
+# RUN --mount=type=cache,target=/var/cache/apt \
+#     --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
+#     source /workspaces/isaac_ros-dev/install/setup.sh && \
+#     colcon build \
+#         --symlink-install \
+#         --cmake-args=-DCMAKE_BUILD_TYPE=Release \
+#         --parallel-workers 1 \
+#         --packages-select zed_components zed_ros2 zed_wrapper
+        
+# # Build packages
+# RUN --mount=type=bind,from=src,target=src \
+    
