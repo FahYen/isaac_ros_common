@@ -5,33 +5,36 @@ FROM ${BASE_IMAGE}
 # Remapping of isaac Ros packages names to Ros 2 packages
 COPY src/isaac_ros_common/docker/rosdep/extra_rosdeps.yaml /etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml
 
-RUN echo "yaml file:///etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml" \
-                > /etc/ros/rosdep/sources.list.d/00-nvidia-isaac.list
-
-# Install dependencies
-RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
-    apt-get update && \
-    rosdep update && \
-    rosdep install \
-        --from-paths /workspaces/isaac_ros-dev/src/isaac_ros_visual_slam/isaac_ros_visual_slam \
-                     /workspaces/isaac_ros-dev/src/isaac_ros_apriltag/isaac_ros_apriltag \
-                     /workspaces/isaac_ros-dev/src/zed-ros2-wrapper \
-        --ignore-src -y
-
-
 # Increase Cyclone socket size for big ROS2 message exchanges
 ENV CYCLONEDDS_URI="file:///workspaces/isaac_ros-dev/src/isaac_ros_common/scripts/cyclone_config.xml"
 
+# For Isaac rosdep
+RUN echo "yaml file:///etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml" \
+                > /etc/ros/rosdep/sources.list.d/00-nvidia-isaac.list
+
+# Otherwise CMake errors
+RUN pip3 uninstall setuptools-scm -y
 
 RUN --mount=type=cache,target=/var/cache/apt \
-    --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
+    apt-get update && \
+    apt install tree
+
+# Rosdep
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=bind,source=./src/ag_tech_ros/config/rosdep_collection,target=/workspaces/isaac_ros-dev/src \
     apt-get update && \
     rosdep update && \
     rosdep install \
-        --from-paths /workspaces/isaac_ros-dev/src/isaac_ros_zed \
-                     /workspaces/isaac_ros-dev/src/isaac_ros_examples \
+        --from-paths /workspaces/isaac_ros-dev/src \
         --ignore-src -y
+
+# ZED SDK
+COPY src/isaac_ros_common/docker/scripts/docker_install-zed-aarch64.sh opt/zed/install-zed-aarch64.sh
+
+RUN chmod +x opt/zed/install-zed-aarch64.sh && \
+    opt/zed/install-zed-aarch64.sh
+
+RUN chmod -R 777 /usr/local/zed
 
 # RUN --mount=type=cache,target=/var/cache/apt \
 #     --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
@@ -45,3 +48,8 @@ RUN --mount=type=cache,target=/var/cache/apt \
 # # Build packages
 # RUN --mount=type=bind,from=src,target=src \
     
+
+# RUN cd /workspaces/isaac_ros-dev/src && \
+#     touch booga && \
+#     cat package.xml && \
+#     ls -a
