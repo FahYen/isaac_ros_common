@@ -1,5 +1,5 @@
 ARG BASE_IMAGE=ubuntu:22.04
-# Look for build time variable, if not default to ubuntu 22.04
+# Look for build time variable, if not defined default to ubuntu 22.04
 FROM ${BASE_IMAGE}
 
 # Remapping of isaac Ros packages names to Ros 2 packages
@@ -12,12 +12,14 @@ ENV CYCLONEDDS_URI="file:///workspaces/isaac_ros-dev/src/isaac_ros_common/script
 RUN echo "yaml file:///etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml" \
                 > /etc/ros/rosdep/sources.list.d/00-nvidia-isaac.list
 
-# Otherwise CMake errors
+# Otherwise CMake errors: `setuptools_scm._file_finders.git listing git files failed - pretending there aren't any`
 RUN pip3 uninstall setuptools-scm -y
 
-RUN --mount=type=cache,target=/var/cache/apt \
-    apt-get update && \
-    apt install tree
+# ZED SDK installation
+COPY src/isaac_ros_common/docker/scripts/docker_install-zed-aarch64.sh opt/zed/install-zed-aarch64.sh
+RUN chmod +x opt/zed/install-zed-aarch64.sh && \
+    opt/zed/install-zed-aarch64.sh
+RUN chmod -R 777 /usr/local/zed
 
 # Rosdep
 RUN --mount=type=cache,target=/var/cache/apt \
@@ -26,30 +28,10 @@ RUN --mount=type=cache,target=/var/cache/apt \
     rosdep update && \
     rosdep install \
         --from-paths /workspaces/isaac_ros-dev/src \
-        --ignore-src -y
+        --ignore-src -y 
 
-# ZED SDK
-COPY src/isaac_ros_common/docker/scripts/docker_install-zed-aarch64.sh opt/zed/install-zed-aarch64.sh
-
-RUN chmod +x opt/zed/install-zed-aarch64.sh && \
-    opt/zed/install-zed-aarch64.sh
-
-RUN chmod -R 777 /usr/local/zed
-
-# RUN --mount=type=cache,target=/var/cache/apt \
-#     --mount=type=bind,source=./src,target=/workspaces/isaac_ros-dev/src \
-#     source /workspaces/isaac_ros-dev/install/setup.sh && \
-#     colcon build \
-#         --symlink-install \
-#         --cmake-args=-DCMAKE_BUILD_TYPE=Release \
-#         --parallel-workers 1 \
-#         --packages-select zed_components zed_ros2 zed_wrapper
-        
-# # Build packages
-# RUN --mount=type=bind,from=src,target=src \
-    
-
-# RUN cd /workspaces/isaac_ros-dev/src && \
-#     touch booga && \
-#     cat package.xml && \
-#     ls -a
+# NPM
+RUN --mount=type=cache,target=/var/cache/apt \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - && \
+    apt-get install -y nodejs && \
+    npm install -g @openai/codex
