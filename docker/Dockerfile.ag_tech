@@ -16,9 +16,11 @@ RUN echo "yaml file:///etc/ros/rosdep/sources.list.d/nvidia-isaac.yaml" \
 RUN pip3 uninstall setuptools-scm -y
 
 # ZED SDK installation
-COPY src/isaac_ros_common/docker/scripts/docker_install-zed-aarch64.sh opt/zed/install-zed-aarch64.sh
-RUN chmod +x opt/zed/install-zed-aarch64.sh && \
-    opt/zed/install-zed-aarch64.sh
+COPY src/isaac_ros_common/docker/scripts/docker_install-zed-x86_64.sh opt/zed/install-zed-x86_64.sh
+
+RUN chmod +x opt/zed/install-zed-x86_64.sh && \
+    opt/zed/install-zed-x86_64.sh
+
 RUN chmod -R 777 /usr/local/zed
 
 # Rosdep
@@ -28,10 +30,10 @@ RUN --mount=type=cache,target=/var/cache/apt \
     rosdep update && \
     rosdep install \
         --from-paths /workspaces/isaac_ros-dev/src \
-        --ignore-src -y 
+        --ignore-src -y
 
-# NPM
-RUN --mount=type=cache,target=/var/cache/apt \
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - && \
-    apt-get install -y nodejs && \
-    npm install -g @openai/codex
+# # NPM
+# RUN --mount=type=cache,target=/var/cache/apt \
+#     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - && \
+#     apt-get install -y nodejs && \
+#     npm install -g @openai/codex
