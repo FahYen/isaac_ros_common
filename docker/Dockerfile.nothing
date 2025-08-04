@@ -1,0 +1,3 @@
+ARG BASE_IMAGE=ubuntu:22.04
+# Look for build time variable, if not defined default to ubuntu 22.04
+FROM ${BASE_IMAGE}
