@@ -287,6 +287,7 @@ docker run -it --rm \
     ${DOCKER_ARGS[@]} \
     -v $ISAAC_ROS_DEV_DIR:/workspaces/isaac_ros-dev \
     -v /etc/localtime:/etc/localtime:ro \
+    -v /dev:/dev \
     --name "$CONTAINER_NAME" \
     --runtime nvidia \
     --gpus all \

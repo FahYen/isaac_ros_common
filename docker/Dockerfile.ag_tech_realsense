@@ -46,7 +46,6 @@ RUN  --mount=type=cache,target=/var/cache/apt \
     apt-get update && \
     apt-get install -y ros-humble-isaac-ros-apriltag
 
-# RUN --mount=type=cache,target=/var/cache/apt \
-#     curl -fsSL https://deb.nodesource.com/setup_22.x | sudo bash - && \
-#     apt-get install -y nodejs && \
-#     npm install -g @openai/codex
+RUN  --mount=type=cache,target=/var/cache/apt \
+    apt-get update && \
+    apt-get install -y ros-humble-mavros ros-humble-mavros-extras
