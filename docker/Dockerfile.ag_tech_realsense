@@ -49,3 +49,7 @@ RUN  --mount=type=cache,target=/var/cache/apt \
 RUN  --mount=type=cache,target=/var/cache/apt \
     apt-get update && \
     apt-get install -y ros-humble-mavros ros-humble-mavros-extras
+
+RUN wget https://raw.githubusercontent.com/mavlink/mavros/ros2/mavros/scripts/install_geographiclib_datasets.sh && \
+    chmod +x install_geographiclib_datasets.sh && \
+    ./install_geographiclib_datasets.sh
