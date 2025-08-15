@@ -53,3 +53,6 @@ RUN  --mount=type=cache,target=/var/cache/apt \
 RUN wget https://raw.githubusercontent.com/mavlink/mavros/ros2/mavros/scripts/install_geographiclib_datasets.sh && \
     chmod +x install_geographiclib_datasets.sh && \
     ./install_geographiclib_datasets.sh
+
+RUN pip install future && \
+    python3 -m pip install PyYAML mavproxy
